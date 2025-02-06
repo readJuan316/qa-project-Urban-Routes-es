@@ -1,11 +1,12 @@
-from driver import driver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.wait import WebDriverWait
+#from driver import driver
+#from selenium.webdriver.chrome.service import Service
+#from selenium.webdriver.chrome.options import Options
+#from selenium.webdriver.support.wait import WebDriverWait
+#from data import phone_number
 from locators import UrbanRoutesLocators
-from selenium.webdriver.support import expected_conditions as EC
+#from selenium.webdriver.support import expected_conditions as EC
 import data
-from selenium import webdriver
+#from selenium import webdriver
 from sms import create_driver_with_capabilities
 
 class TestUrbanRoutes:
@@ -25,11 +26,18 @@ class TestUrbanRoutes:
         address_to = data.address_to
         self.routes_page.set_route(address_from, address_to)
 
+    def test_request_taxi(self):
+        self.routes_page.select_request_taxi()
+
     def test_select_comfort_tariff(self):
         """Prueba la selección de la tarifa de confort."""
-        self.driver.get(data.urban_routes_url)
-        ## WebDriverWait(self.driver, 15).until(EC.presence_of_element_located(UrbanRoutesLocators.comfort_tariff))
-        routes_page = UrbanRoutesPage(self.driver)
-        selected_tariff = self.driver.find_element(*UrbanRoutesLocators.comfort_tariff).get_attribute("class")
-        ## assert "selected" in self.driver.find_element(*UrbanRoutesLocators.comfort_tariff).get_attribute("class")
-        assert "active" in selected_tariff
+        self.routes_page.select_comfort_tariff()
+        selected_tariff = self.routes_page.get_selected_tariff()
+        assert selected_tariff == "Comfort"
+
+    def test_add_phone_number(self):
+        """Prueba la introducción del número de teléfono."""
+        self.routes_page.add_phone_number(data.phone_number)
+        selected_phone_number = self.routes_page.get_add_phone_number()
+        assert selected_phone_number == "phone"
+

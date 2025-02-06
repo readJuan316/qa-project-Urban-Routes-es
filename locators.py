@@ -2,7 +2,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from urllib3.util.wait import select_wait_for_socket
+#from urllib3.util.wait import select_wait_for_socket
 #from utilities import retrieve_phone_code
 
 class UrbanRoutesLocators:
@@ -13,7 +13,8 @@ class UrbanRoutesLocators:
     mode_button = (By.CSS_SELECTOR, "modes-container")
     ask_taxi = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[1]/div[3]/div[1]/button')
     tariff_picker = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]')
-    comfort_tariff = (By.XPATH, '//button[@data-for="tariff-card-4"]')   ##]/div/div[3]/div[3]/div[2]/div[1]/div[5]'""
+    #comfort_tariff_button = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[1]/div[5]')
+    comfort_tariff_button = (By.XPATH, "//div[contains(text(), 'Comfort')]")
     phone = (By.CLASS_NAME, "np-button")
     add_phone_number = (By.ID, 'phone')
     next_button = (By.CLASS_NAME, "button.full")
@@ -22,7 +23,7 @@ class UrbanRoutesLocators:
     payment_method = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[2]')
     card = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[1]/div[2]/div[3]')
     card_number = (By.XPATH, '//*[@id="number"]')
-    code_card = (By.XPATH, '//*[@id="code"]')
+    card_code = (By.XPATH, '//*[@id="code"]')
     add_credit_card = (By.CLASS_NAME, "button.full")
     card_space = (By.CLASS_NAME, "plc")
     close_card_button = (By.CLASS_NAME, "close-button.section-close")
@@ -34,6 +35,7 @@ class UrbanRoutesLocators:
     By.XPATH, '//div[@class="payment-picker open"]//button[@class="close-button section-close"]')
     current_payment_method = (By.CLASS_NAME, 'pp-value-text')
     payment_method_select = (By.XPATH, '//div[@class="pp-button filled"]//div[contains(text(), "Payment method")]')
+
 
     def __init__(self, driver):
         self.driver = driver
@@ -65,30 +67,42 @@ class UrbanRoutesLocators:
     def get_to(self):
         return self.driver.find_element(*self.to_field).get_property('value')
 
+
+    def select_request_taxi(self):
+        element = self.wait.until(EC.element_to_be_clickable(self.request_taxi_button))
+        element.click()
+
+    def select_comfort_tariff(self):
+        element = self.wait.until(EC.element_to_be_clickable(self.comfort_tariff_button))
+        element.click()
+
+    def get_selected_tariff(self):
+        element = self.driver.find_element(*self.comfort_tariff_button)
+        return element.text
+
     def set_message_for_driver(self, message):
         "Agrega un mensaje para el conductor"
         driver_message = self.wait.until(EC.visibility_of_element_located(self.driver_message))
         driver_message.clear()
         driver_message.send_keys(message)
 
-    def select_comfort_tariff(self):
-        "Selecciona la tarifa de comfor"
-        comfort_tariff = self.wait.until(EC.visibility_of_element_located(self.comfort_tariff))
-        comfort_tariff.click()
-
         return self.driver.find_element(*self.comfort_tariff).get_property('class')
 
-    def set_phone_number(self, phone_number):
+    def set_add_phone_number(self, phone_number):
         "Configura el número de teléfono"
-        phone_input = self.wait.until(EC.visibility_of_element_located(self.add_phone_number))
+        phone_input = self.wait.until(EC.presence_of_element_located(self.add_phone_number))
         phone_input.clear()
         phone_input.send_keys(phone_number)
-        self.wait_for_element(EC.visibility_of_element_located(self.next_button)).click()
+        self.wait_for_element(EC.element_to_be_clickable(self.next_button)).click()
 
-    def add_credit_card(self, card_number, card_cvv):
+    def get_add_phone_number(self):
+        element = self.driver.find_element(*self.add_phone_number)
+        return element.click
+
+    def add_credit_card(self, card_number, card_code):
         "Agrega una tarjeta de crédito"
         card_number = self.wait.until(EC.visibility_of_element_located(self.card_number))
-        card_number = self.wait.until(EC.visibility_of_element_located(self.card_cvv))
+        card_number = self.wait.until(EC.visibility_of_element_located(self.card_code))
         card_number.clear()
         card_number.send_keys(card_number)
         card_number = self.wait.until(EC.visibility_of_element_located(self.card_number)).click()
