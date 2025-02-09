@@ -1,13 +1,6 @@
-#from driver import driver
-#from selenium.webdriver.chrome.service import Service
-#from selenium.webdriver.chrome.options import Options
-#from selenium.webdriver.support.wait import WebDriverWait
-#from data import phone_number
-from data import phone_number
-from locators import UrbanRoutesLocators
-#from selenium.webdriver.support import expected_conditions as EC
 import data
-#from selenium import webdriver
+
+from locators import UrbanRoutesLocators
 from sms import create_driver_with_capabilities
 
 class TestUrbanRoutes:
@@ -55,4 +48,12 @@ class TestUrbanRoutes:
         #self.routes_page.set_route(driver_comment)
         assert display_driver_comment
 
+    def test_blanket_and_tissues(self):
+        self.routes_page.toggle_blanket()
+        blanket_switch = self.routes_page.is_blanket_select()
+        assert blanket_switch
 
+    def test_ice_cream(self):
+        self.routes_page.add_two_ice_cream()
+        ice_count = self.routes_page.get_ice_cream_count()
+        assert ice_count == 2

@@ -1,12 +1,9 @@
-#import time
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from xpath.html import button
-
-from data import card_number
 from sms import retrieve_phone_code
-
 
 class UrbanRoutesLocators:
     address_input = (By.ID, "address")
@@ -44,7 +41,10 @@ class UrbanRoutesLocators:
     comment_input = (By.XPATH, '//*[@id="comment"]')
     request_order = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[1]')
     blanket_tissues = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[1]/div/div[2]')
-    ice_cream_bucket = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]')
+
+    ice_cream_bucket = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[3]')
+    ice_cream_count = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[2]')
+
     close_button_payment_method = (
     By.XPATH, '//div[@class="payment-picker open"]//button[@class="close-button section-close"]')
     current_payment_method = (By.CLASS_NAME, 'pp-value-text')
@@ -168,4 +168,42 @@ class UrbanRoutesLocators:
     def get_display_driver_comment(self):
         element = self.driver.find_element(*self.comment_input)
         return element.get_attribute('value')
+
+    def open_section(self):
+        reqs_section = self.driver.find_element(By.CLASS_NAME, 'reqs')
+        class_reqs_open = reqs_section.get_attribute('class')
+        if 'open' not in class_reqs_open:
+            header = reqs_section.find_element(By.CLASS_NAME, 'reqs-header')
+            header.click()
+            WebDriverWait(self.driver,10).until(
+                lambda driver: 'open' in reqs_section.get_attribute('class')
+            )
+
+    def toggle_blanket(self):
+        self.open_section()
+        blanket_button = self.wait.until(EC.element_to_be_clickable(self.blanket_tissues))
+        blanket_button.click()
+
+    def is_blanket_select(self):
+        self.open_section()
+        blanket_switch = self.driver.find_element(*self.blanket_tissues)
+        class_reqs_open = blanket_switch.get_attribute('class')
+        return class_reqs_open
+
+    def add_two_ice_cream(self):
+        self.open_section()
+        ice_plus = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(self.ice_cream_bucket)
+        )
+        for _ in range(2):
+            ice_plus.click()
+            time.sleep(0.5)
+
+    def get_ice_cream_count(self):
+        element = self.wait.until(
+            EC.visibility_of_element_located(self.ice_cream_count)
+        )
+        count_text = element.text
+        return int(count_text)
+
 
