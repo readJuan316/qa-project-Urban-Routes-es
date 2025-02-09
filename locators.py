@@ -1,9 +1,12 @@
-import time
+#import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-#from urllib3.util.wait import select_wait_for_socket
-#from utilities import retrieve_phone_code
+from xpath.html import button
+
+from data import card_number
+from sms import retrieve_phone_code
+
 
 class UrbanRoutesLocators:
     address_input = (By.ID, "address")
@@ -13,21 +16,32 @@ class UrbanRoutesLocators:
     mode_button = (By.CSS_SELECTOR, "modes-container")
     ask_taxi = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[1]/div[3]/div[1]/button')
     tariff_picker = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]')
-    #comfort_tariff_button = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[1]/div[5]')
+
     comfort_tariff_button = (By.XPATH, "//div[contains(text(), 'Comfort')]")
-    phone = (By.CLASS_NAME, "np-button")
-    add_phone_number = (By.ID, 'phone')
+    phone_number_button = (By.CLASS_NAME, "np-button")
+    phone_input = (By.ID, 'phone')
+    phone_submit_button = (By.XPATH, "//button[contains(text(),'Siguiente')]")
     next_button = (By.CLASS_NAME, "button.full")
     add_code= (By.ID, 'code')
     confirmation_code = (By.CLASS_NAME, "button.full")
-    payment_method = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[2]')
-    card = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[1]/div[2]/div[3]')
-    card_number = (By.XPATH, '//*[@id="number"]')
-    card_code = (By.XPATH, '//*[@id="code"]')
-    add_credit_card = (By.CLASS_NAME, "button.full")
+
+    metodo_pago_button = (By.CLASS_NAME, 'pp-button')
+    add_card_button = (By.XPATH, "//div[contains(text(), 'Agregar tarjeta')]")
+    confirm_card_button = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[2]/form/div[3]/button[1]')
+    close_button = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[1]/button')
+    card_number_input = (By.ID, 'number')
+    card_code_input = (By.XPATH, "//input[@id='code' and @placeholder='12']")
+
+    card = (By.XPATH, '//*[@id="root"]/div/div[2]/div[2]/div[1]/div[2]/div[3]/div[2]')
+    card_number_button = (By.CLASS_NAME, 'card_number_input')
+    card_submit_button = (By.XPATH, "//button[contains(text(),'Agregar')]")
+    card_code = (By.ID, 'code')
     card_space = (By.CLASS_NAME, "plc")
     close_card_button = (By.CLASS_NAME, "close-button.section-close")
-    driver_message = (By.ID, "comment")
+
+    message_div = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[3]/div')
+    driver_comment = (By.ID, "comment")
+    comment_input = (By.XPATH, '//*[@id="comment"]')
     request_order = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[1]')
     blanket_tissues = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[1]/div/div[2]')
     ice_cream_bucket = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]')
@@ -67,7 +81,6 @@ class UrbanRoutesLocators:
     def get_to(self):
         return self.driver.find_element(*self.to_field).get_property('value')
 
-
     def select_request_taxi(self):
         element = self.wait.until(EC.element_to_be_clickable(self.request_taxi_button))
         element.click()
@@ -80,47 +93,79 @@ class UrbanRoutesLocators:
         element = self.driver.find_element(*self.comfort_tariff_button)
         return element.text
 
-    def set_message_for_driver(self, message):
-        "Agrega un mensaje para el conductor"
-        driver_message = self.wait.until(EC.visibility_of_element_located(self.driver_message))
-        driver_message.clear()
-        driver_message.send_keys(message)
+    def selected_phone_number_button(self):
+        element = self.wait.until(EC.element_to_be_clickable(self.phone_number_button))
+        element.click()
 
-        return self.driver.find_element(*self.comfort_tariff).get_property('class')
+    def get_enter_phone_number(self, phone_number):
+        phone_field = self.wait.until(EC.element_to_be_clickable(self.phone_input))
+        phone_field.clear()
+        phone_field.send_keys(phone_number)
+        self.driver.find_element(*self.phone_submit_button).click()
 
-    def set_add_phone_number(self, phone_number):
-        "Configura el número de teléfono"
-        phone_input = self.wait.until(EC.presence_of_element_located(self.add_phone_number))
-        phone_input.clear()
-        phone_input.send_keys(phone_number)
-        self.wait_for_element(EC.element_to_be_clickable(self.next_button)).click()
+        "Esperar que aparezca la ventana emergente"
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//div[contains(text(),'Introduce el código')]"))
+        )
 
-    def get_add_phone_number(self):
-        element = self.driver.find_element(*self.add_phone_number)
-        return element.click
+        "Obtener el código"
+        code = retrieve_phone_code(self.driver)
 
-    def add_credit_card(self, card_number, card_code):
-        "Agrega una tarjeta de crédito"
-        card_number = self.wait.until(EC.visibility_of_element_located(self.card_number))
-        card_number = self.wait.until(EC.visibility_of_element_located(self.card_code))
-        card_number.clear()
-        card_number.send_keys(card_number)
-        card_number = self.wait.until(EC.visibility_of_element_located(self.card_number)).click()
-        self.wait_for_element(EC.visibility_of_element_located(self.add_credit_card))
+        "Ingresar el código"
+        code_input = self.driver.find_element(By.ID,'code')
+        code_input.clear()
+        code_input.send_keys(code)
 
-    def request_blanket_and_tissues(self, blanket_tissues):
-        """Selecciona las opciones de manta y pañuelos"""
-        blanket_and_tissues = self.wait.until(EC.visibility_of_element_located(self.blanket_tissues))
-        self.wait_for_element(EC.visibility_of_element_located(self.blanket_tissues)).click()
+        "Hacer clic"
+        confirm = self.driver.find_element(By.XPATH, "//button[contains(text(),'Confirmar')]")
+        confirm.click()
 
-    def request_ice_cream(self, quantity):
-        """Solicita una cantidad específica de helado"""
-        ice_cream_selector = self.wait.until(EC.visibility_of_element_located(self.ice_cream_bucket))
-        ice_cream_selector.clear()
-        ice_cream_selector.send_keys(str(quantity))
+    def get_display_phone_number(self):
+        element = self.driver.find_element(*self.phone_input)
+        return element.get_attribute('value')
 
-    def click_request_taxi(self):
-        """Hace clic en el botón 'Pedir un taxi'"""
-        request_button = self.wait.until(EC.visibility_of_element_located(self.request_taxi_button))
-        request_button.click()
+    def selected_card_number_button(self):
+        element = self.wait.until(EC.element_to_be_clickable(self.metodo_pago_button))
+        element.click()
+
+    def get_card_number(self, card_number, card_code):
+        "Agregar número de tarjeta"
+        add_card_element = self.wait.until(EC.element_to_be_clickable(self.add_card_button))
+        add_card_element.click()
+
+        card_number_field = self.wait.until(EC.visibility_of_element_located(self.card_number_input))
+        card_number_field.clear()
+        card_number_field.send_keys(card_number)
+
+        "Agregar código de tarjeta"
+        card_code_field = self.wait.until(EC.visibility_of_element_located(self.card_code_input))
+        card_code_field.clear()
+        card_code_field.send_keys(card_code)
+
+        "Hacer clic en cualquier parte de la pantalla"
+        self.driver.find_element(By.TAG_NAME,'body').click()
+
+        "Hacer clic al botón agregar"
+        confirm_button = self.wait.until(EC.element_to_be_clickable(self.confirm_card_button))
+        confirm_button.click()
+
+        "Cerrar el popup"
+        close_button = self.wait.until(EC.element_to_be_clickable(self.close_button))
+        close_button.click()
+
+    def is_card_add(self):
+        self.driver.find_element(*self.close_button)
+        return True
+
+    def set_driver_comment(self, comment):
+        "Escribir mensaje al conductor"
+        message_div_element = self.wait.until(EC.element_to_be_clickable(self.message_div))
+        message_div_element.click()
+        driver_comment = self.wait.until(EC.visibility_of_element_located(self.driver_comment))
+        driver_comment.clear()
+        driver_comment.send_keys(comment)
+
+    def get_display_driver_comment(self):
+        element = self.driver.find_element(*self.comment_input)
+        return element.get_attribute('value')
 
