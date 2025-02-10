@@ -1,5 +1,3 @@
-from re import search
-
 import data
 
 from locators import UrbanRoutesLocators
