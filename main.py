@@ -1,3 +1,5 @@
+from re import search
+
 import data
 
 from locators import UrbanRoutesLocators
@@ -14,13 +16,12 @@ class TestUrbanRoutes:
         cls.driver.get(data.urban_routes_url)
         cls.routes_page = UrbanRoutesLocators(cls.driver)
 
-    def test_set_route(self):
+    def test_request_taxi(self):
         """Prueba la seleccion de la ruta de origen y destino"""
         address_from = data.address_from
         address_to = data.address_to
         self.routes_page.set_route(address_from, address_to)
 
-    def test_request_taxi(self):
         self.routes_page.select_request_taxi()
 
     def test_select_comfort_tariff(self):
@@ -57,3 +58,14 @@ class TestUrbanRoutes:
         self.routes_page.add_two_ice_cream()
         ice_count = self.routes_page.get_ice_cream_count()
         assert ice_count == 2
+
+    def test_ask_taxi(self):
+        self.routes_page.click_ask_taxi()
+        search_true = self.routes_page.is_search()
+        assert search_true
+
+    def test_display_modal_taxi(self):
+        self.routes_page.selected_modal_taxi()
+        display_true = self.routes_page.is_display_modal_taxi()
+        assert display_true
+   

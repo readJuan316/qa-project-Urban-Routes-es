@@ -1,4 +1,5 @@
 import time
+from idlelib.rpc import request_queue
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -45,6 +46,11 @@ class UrbanRoutesLocators:
     ice_cream_bucket = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[3]')
     ice_cream_count = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[2]')
 
+    ask_taxi_button = (By.XPATH, "//span[contains(text(),'Pedir un taxi')]")
+    modal_taxi = (By.XPATH, '//*[@id="root"]/div/div[5]/div[2]/div[1]/div/div[1]')
+
+    driver_information = (By.XPATH, '//*[@id="root"]/div/div[5]')
+
     close_button_payment_method = (
     By.XPATH, '//div[@class="payment-picker open"]//button[@class="close-button section-close"]')
     current_payment_method = (By.CLASS_NAME, 'pp-value-text')
@@ -54,10 +60,6 @@ class UrbanRoutesLocators:
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 10)
-
-    def wait_for_element(self, locator):
-        """Espera a que un elemento esté visible en la página"""
-        return self.wait.until(EC.visibility_of_element_located(locator))
 
     def set_route(self, from_address, to_address):
         self.set_from(from_address)
@@ -206,4 +208,21 @@ class UrbanRoutesLocators:
         count_text = element.text
         return int(count_text)
 
+    def click_ask_taxi(self):
+        request_button = self.wait.until(EC.element_to_be_clickable(self.ask_taxi_button))
+        request_button.click()
 
+    def is_search(self):
+        "Esperar que aparezca la ventana emergente modal"
+        self.wait.until(
+            EC.text_to_be_present_in_element((By.CLASS_NAME, 'order-header-title'),'Buscar automóvil')
+        )
+        return True
+
+    def selected_modal_taxi(self):
+        WebDriverWait(self.driver,20).until(EC.visibility_of_element_located(self.driver_information))
+        time.sleep(5)
+
+    def is_display_modal_taxi(self):
+        self.wait.until(EC.visibility_of_element_located(self.driver_information))
+        return True
