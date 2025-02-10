@@ -50,12 +50,6 @@ class UrbanRoutesLocators:
 
     driver_information = (By.XPATH, '//*[@id="root"]/div/div[5]')
 
-    close_button_payment_method = (
-    By.XPATH, '//div[@class="payment-picker open"]//button[@class="close-button section-close"]')
-    current_payment_method = (By.CLASS_NAME, 'pp-value-text')
-    payment_method_select = (By.XPATH, '//div[@class="pp-button filled"]//div[contains(text(), "Payment method")]')
-
-
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 10)
