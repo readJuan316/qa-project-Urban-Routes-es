@@ -1,6 +1,6 @@
 import data
 
-from locators import UrbanRoutesLocators
+from page import UrbanRoutesPage
 from sms import create_driver_with_capabilities
 
 class TestUrbanRoutes:
@@ -12,7 +12,7 @@ class TestUrbanRoutes:
     def setup_class(cls):
         cls.driver = create_driver_with_capabilities()
         cls.driver.get(data.urban_routes_url)
-        cls.routes_page = UrbanRoutesLocators(cls.driver)
+        cls.routes_page = UrbanRoutesPage(cls.driver)
 
     def test_request_taxi(self):
         """Prueba la seleccion de la ruta de origen y destino"""
