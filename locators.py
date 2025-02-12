@@ -21,6 +21,9 @@ class UrbanRoutesLocators:
     next_button = (By.CLASS_NAME, "button.full")
     add_code= (By.ID, 'code')
     confirmation_code = (By.CLASS_NAME, "button.full")
+    phone_code_input = (By.XPATH, "//div[contains(text(),'Introduce el código')]")
+    code_input = (By.ID,'code')
+    confirm_button = (By.XPATH, "//button[contains(text(),'Confirmar')]")
 
     metodo_pago_button = (By.CLASS_NAME, 'pp-button')
     add_card_button = (By.XPATH, "//div[contains(text(), 'Agregar tarjeta')]")
@@ -35,6 +38,7 @@ class UrbanRoutesLocators:
     card_code = (By.ID, 'code')
     card_space = (By.CLASS_NAME, "plc")
     close_card_button = (By.CLASS_NAME, "close-button.section-close")
+    body_submit = (By.TAG_NAME,'body')
 
     message_div = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[3]/div')
     driver_comment = (By.ID, "comment")
@@ -42,11 +46,15 @@ class UrbanRoutesLocators:
     request_order = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[1]')
     blanket_tissues = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[1]/div/div[2]')
 
+    open_reqs = (By.CLASS_NAME, 'reqs')
+    open_reqs_header = (By.CLASS_NAME, 'reqs-header')
+
     ice_cream_bucket = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[3]')
     ice_cream_count = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[2]')
 
     ask_taxi_button = (By.XPATH, "//span[contains(text(),'Pedir un taxi')]")
     modal_taxi = (By.XPATH, '//*[@id="root"]/div/div[5]/div[2]/div[1]/div/div[1]')
+    search_car = (By.CLASS_NAME, 'order-header-title')
 
     driver_information = (By.XPATH, '//*[@id="root"]/div/div[5]')
 
@@ -100,19 +108,19 @@ class UrbanRoutesLocators:
 
         "Esperar que aparezca la ventana emergente"
         WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//div[contains(text(),'Introduce el código')]"))
+            EC.visibility_of_element_located(self.phone_code_input)
         )
 
         "Obtener el código"
         code = retrieve_phone_code(self.driver)
 
         "Ingresar el código"
-        code_input = self.driver.find_element(By.ID,'code')
+        code_input = self.driver.find_element(*self.code_input)
         code_input.clear()
         code_input.send_keys(code)
 
         "Hacer clic"
-        confirm = self.driver.find_element(By.XPATH, "//button[contains(text(),'Confirmar')]")
+        confirm = self.driver.find_element(*self.confirm_button)
         confirm.click()
 
     def get_display_phone_number(self):
@@ -138,7 +146,7 @@ class UrbanRoutesLocators:
         card_code_field.send_keys(card_code)
 
         "Hacer clic en cualquier parte de la pantalla"
-        self.driver.find_element(By.TAG_NAME,'body').click()
+        self.driver.find_element(*self.body_submit).click()
 
         "Hacer clic al botón agregar"
         confirm_button = self.wait.until(EC.element_to_be_clickable(self.confirm_card_button))
@@ -165,10 +173,10 @@ class UrbanRoutesLocators:
         return element.get_attribute('value')
 
     def open_section(self):
-        reqs_section = self.driver.find_element(By.CLASS_NAME, 'reqs')
+        reqs_section = self.driver.find_element(*self.open_reqs)
         class_reqs_open = reqs_section.get_attribute('class')
         if 'open' not in class_reqs_open:
-            header = reqs_section.find_element(By.CLASS_NAME, 'reqs-header')
+            header = reqs_section.find_element(*self.open_reqs_header)
             header.click()
             WebDriverWait(self.driver,10).until(
                 lambda driver: 'open' in reqs_section.get_attribute('class')
@@ -208,7 +216,7 @@ class UrbanRoutesLocators:
     def is_search(self):
         "Esperar que aparezca la ventana emergente modal"
         self.wait.until(
-            EC.text_to_be_present_in_element((By.CLASS_NAME, 'order-header-title'),'Buscar automóvil')
+            EC.text_to_be_present_in_element(self.search_car,'Buscar automóvil')
         )
         return True
 

@@ -66,4 +66,7 @@ class TestUrbanRoutes:
         self.routes_page.selected_modal_taxi()
         display_true = self.routes_page.is_display_modal_taxi()
         assert display_true
-   
+
+    @classmethod
+    def close_class(cls):
+        cls.driver.quit()
